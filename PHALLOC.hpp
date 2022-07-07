@@ -77,7 +77,11 @@ namespace pha
 	{
 		#ifdef PHALLOC_DEBUG
 		// DO NOT USE instanceList
-		static std::map<void*, mem_instance> instanceList;
+		extern std::map<void*, mem_instance> instanceList;
+		#ifdef PHALLOC_IMPLEMENTATION
+		// DO NOT USE instanceList
+		std::map<void*, mem_instance> instanceList;
+		#endif
 		#endif
 
 		// DO NOT CALL Malloc<typename>(size_t, const char*, size_t), USE PHA_MALLOC(typename, number) MACRO INSTEAD

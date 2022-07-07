@@ -82,9 +82,14 @@ extern "C"
 		meminstance_t instance;
 	} voidptrmeminstancevector_t; // lol
 
-	static voidptrmeminstancevector_t* Pha_Internal_instanceVector;
-	static size_t Pha_Internal_instanceVectorLength;
-	static size_t Pha_Internal_instanceVectorSize;
+	extern voidptrmeminstancevector_t* Pha_Internal_instanceVector;
+	extern size_t Pha_Internal_instanceVectorLength;
+	extern size_t Pha_Internal_instanceVectorSize;
+	#ifdef PHALLOC_IMPLEMENTATION
+	voidptrmeminstancevector_t* Pha_Internal_instanceVector;
+	size_t Pha_Internal_instanceVectorLength;
+	size_t Pha_Internal_instanceVectorSize;
+	#endif
 
 	static inline void Pha_Internal_InstanceVector_Add(voidptrmeminstancevector_t obj)
 	{

@@ -1,3 +1,4 @@
+#define PHALLOC_IMPLEMENTATION // Only define PHALLOC_IMPLEMENTATION in once in one translation unit
 #define PHALLOC_DEBUG
 #define PHALLOC_EZ_NAMES
 
