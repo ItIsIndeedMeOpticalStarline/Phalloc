@@ -1,12 +1,10 @@
 #define PHALLOC_DEBUG
 #define PHALLOC_EZ_NAMES
 
-#include "PHALLOC.h"
+#include "PHALLOC.hpp"
 
 int main()
 {
-	Pha_Init();
-
 	printf_s("Hello, World!\n");
 
 	size_t* arr1 = Malloc(size_t, sizeof(size_t) * 3);
@@ -15,9 +13,7 @@ int main()
 	Free(arr1);
 	Free(arr2);
 
-	Pha_Dump(stdout);
-
-	Pha_Close();
+	pha::Dump(std::cout);
 
 	return 0;
 }
