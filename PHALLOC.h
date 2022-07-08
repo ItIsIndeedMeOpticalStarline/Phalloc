@@ -95,7 +95,11 @@ extern "C"
 	{
 		if (Pha_Internal_instanceVector == NULL)
 		{
+			#ifdef _CRT_INSECURE_DEPRECATE
 			fprintf_s(stderr, "PHALLOC ERROR: A PHALLOC library function was called before Pha_Init()\n");
+			#else
+			fprintf(stderr, "PHALLOC ERROR: A PHALLOC library function was called before Pha_Init()\n");
+			#endif
 			exit(EXIT_FAILURE);
 		}
 
@@ -104,7 +108,11 @@ extern "C"
 			Pha_Internal_instanceVector = (voidptrmeminstancevector_t*)realloc((void*)Pha_Internal_instanceVector, (Pha_Internal_instanceVectorLength + (Pha_Internal_instanceVectorLength / 2)) * sizeof(voidptrmeminstancevector_t));
 			if (Pha_Internal_instanceVector == NULL)
 			{
+				#ifdef _CRT_INSECURE_DEPRECATE
 				fprintf_s(stderr, "PHALLOC ERROR: Pha_Internal_InstanceVector_Add(voidptrmeminstancevector_t) failed to reallocate vector\n");
+				#else
+				fprintf(stderr, "PHALLOC ERROR: Pha_Internal_InstanceVector_Add(voidptrmeminstancevector_t) failed to reallocate vector\n");
+				#endif
 				exit(EXIT_FAILURE);
 			}
 		}
@@ -116,7 +124,11 @@ extern "C"
 	{
 		if (Pha_Internal_instanceVector == NULL)
 		{
+			#ifdef _CRT_INSECURE_DEPRECATE
 			fprintf_s(stderr, "PHALLOC ERROR: A PHALLOC library function was called before Pha_Init()\n");
+			#else
+			fprintf(stderr, "PHALLOC ERROR: A PHALLOC library function was called before Pha_Init()\n");
+			#endif
 			exit(EXIT_FAILURE);
 		}
 
@@ -138,7 +150,11 @@ extern "C"
 	{
 		if (Pha_Internal_instanceVector == NULL)
 		{
+			#ifdef _CRT_INSECURE_DEPRECATE
 			fprintf_s(stderr, "PHALLOC ERROR: A PHALLOC library function was called before Pha_Init()\n");
+			#else
+			fprintf(stderr, "PHALLOC ERROR: A PHALLOC library function was called before Pha_Init()\n");
+			#endif
 			exit(EXIT_FAILURE);
 		}
 
@@ -174,14 +190,22 @@ extern "C"
 		#ifndef PHALLOC_SPEED
 		if (bytes % sizeOfType != 0) // Would a cast work?
 		{
+			#ifdef _CRT_INSECURE_DEPRECATE
 			fprintf_s(stderr, "PHALLOC ERROR: Truncated Memory Cast! Tried to PHA_MALLOC %llu bytes in %s on line %llu, which could not be cast to a type of size %llu\n", bytes, file, line, sizeOfType);
+			#else
+			fprintf(stderr, "PHALLOC ERROR: Truncated Memory Cast! Tried to PHA_MALLOC %llu bytes in %s on line %llu, which could not be cast to a type of size %llu\n", bytes, file, line, sizeOfType);
+			#endif
 			exit(EXIT_FAILURE);
 		}
 
 		void* mem = malloc(bytes);
 		if (!mem)
 		{
+			#ifdef _CRT_INSECURE_DEPRECATE
 			fprintf_s(stderr, "PHALLOC ERROR: Out of Memory! Tried to PHA_MALLOC %llu bytes in %s on line %llu\n", bytes, file, line);
+			#else
+			fprintf(stderr, "PHALLOC ERROR: Out of Memory! Tried to PHA_MALLOC %llu bytes in %s on line %llu\n", bytes, file, line);
+			#endif
 			exit(EXIT_FAILURE);
 		}
 
@@ -202,7 +226,11 @@ extern "C"
 		void* mem = calloc(numElements, sizeOfType);
 		if (!mem)
 		{
+			#ifdef _CRT_INSECURE_DEPRECATE
 			fprintf_s(stderr, "PHALLOC ERROR: Out of Memory! Tried to PHA_CALLOC %llu bytes in %s on line %llu\n", numElements, file, line);
+			#else
+			fprintf(stderr, "PHALLOC ERROR: Out of Memory! Tried to PHA_CALLOC %llu bytes in %s on line %llu\n", numElements, file, line);
+			#endif
 			exit(EXIT_FAILURE);
 		}
 
@@ -226,14 +254,22 @@ extern "C"
 		#ifndef PHALLOC_SPEED
 		if (bytes % sizeOfType != 0) // Would a cast work?
 		{
+			#ifdef _CRT_INSECURE_DEPRECATE
 			fprintf_s(stderr, "PHALLOC ERROR: Truncated Memory Cast! Tried to PHA_REALLOC pointer at address %p to a new size of %llu bytes in %s on line %llu, which could not be cast to a type of size %llu\n", memBlock, bytes, file, line, sizeOfType);
+			#else
+			fprintf(stderr, "PHALLOC ERROR: Truncated Memory Cast! Tried to PHA_REALLOC pointer at address %p to a new size of %llu bytes in %s on line %llu, which could not be cast to a type of size %llu\n", memBlock, bytes, file, line, sizeOfType);
+			#endif
 			exit(EXIT_FAILURE);
 		}
 
 		void* reallocdMem = realloc(memBlock, bytes);
 		if (!reallocdMem)
 		{
+			#ifdef _CRT_INSECURE_DEPRECATE
 			fprintf_s(stderr, "PHALLOC ERROR: Failed Reallocation! Tried to PHA_REALLOC pointer at address %p to a new size of %llu bytes in %s on line %llu\n", memBlock, bytes, file, line);
+			#else
+			fprintf(stderr, "PHALLOC ERROR: Failed Reallocation! Tried to PHA_REALLOC pointer at address %p to a new size of %llu bytes in %s on line %llu\n", memBlock, bytes, file, line);
+			#endif
 			exit(EXIT_FAILURE);
 		}
 
@@ -267,7 +303,11 @@ extern "C"
 		PHA_BOOL doStderr = PHA_FALSE;
 		if (stream == NULL)
 		{
+			#ifdef _CRT_INSECURE_DEPRECATE
 			fprintf_s(stderr, "PHALLOC ERROR: Failed to dump to stream! Attempting to output to stderr...\n");
+			#else
+			fprintf(stderr, "PHALLOC ERROR: Failed to dump to stream! Attempting to output to stderr...\n");
+			#endif
 			doStderr = PHA_TRUE;
 		}
 
@@ -275,18 +315,42 @@ extern "C"
 		{
 			char allocOrRealloc[12] = "Allocated";
 			if (Pha_Internal_instanceVector[i].instance.reallocated)
+			{
+				#ifdef _CRT_INSECURE_DEPRECATE
 				strcpy_s(allocOrRealloc, sizeof(allocOrRealloc), "Reallocated");
+				#else
+				strcpy(allocOrRealloc, "Reallocated");
+				#endif
+			}
 
 			char freedOrNot[8] = "Was not";
 			#ifndef PHALLOC_WARN_DIRE
 			if (Pha_Internal_instanceVector[i].instance.freed)
+			{
+				#ifdef _CRT_INSECURE_DEPRECATE
 				strcpy_s(freedOrNot, sizeof(freedOrNot), "Was");
+				#else
+				strcpy(freedOrNot, "Was");
+				#endif
+			}
 			#endif
 
 			if (doStderr)
+			{
+				#ifdef _CRT_INSECURE_DEPRECATE
 				fprintf_s(stderr, "%p: %s in %s on line %llu. %s freed.\n", Pha_Internal_instanceVector[i].mem, allocOrRealloc, Pha_Internal_instanceVector[i].instance.file, Pha_Internal_instanceVector[i].instance.line, freedOrNot);
+				#else
+				fprintf(stderr, "%p: %s in %s on line %llu. %s freed.\n", Pha_Internal_instanceVector[i].mem, allocOrRealloc, Pha_Internal_instanceVector[i].instance.file, Pha_Internal_instanceVector[i].instance.line, freedOrNot);
+				#endif
+			}
 			else
+			{
+				#ifdef _CRT_INSECURE_DEPRECATE
 				fprintf_s(stream, "%p: %s in %s on line %llu. %s freed.\n", Pha_Internal_instanceVector[i].mem, allocOrRealloc, Pha_Internal_instanceVector[i].instance.file, Pha_Internal_instanceVector[i].instance.line, freedOrNot);
+				#else
+				fprintf(stream, "%p: %s in %s on line %llu. %s freed.\n", Pha_Internal_instanceVector[i].mem, allocOrRealloc, Pha_Internal_instanceVector[i].instance.file, Pha_Internal_instanceVector[i].instance.line, freedOrNot);
+				#endif
+			}
 		}
 	}
 
