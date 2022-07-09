@@ -20,47 +20,48 @@
 *//*--------------------------------------------------------------------------------*/
 
 #pragma region phalloc_internal_setting_macros
-	#ifdef Malloc
-	#undef PHALLOC_EZ_NAMES
-	#error Malloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+#ifdef Malloc
+#undef PHALLOC_EZ_NAMES
+#error Malloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+#endif
+
+#ifdef Calloc
+#undef PHALLOC_EZ_NAMES
+#error Calloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+#endif
+
+#ifdef ReAlloc
+#undef PHALLOC_EZ_NAMES
+#error ReAlloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+#endif
+
+#ifdef Free
+#undef PHALLOC_EZ_NAMES
+#error Free macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+#endif
+
+#ifdef PHALLOC_SPEED
+	#ifdef PHALLOC_DEBUG
+	#undef PHALLOC_DEBUG
 	#endif
-
-	#ifdef Calloc
-	#undef PHALLOC_EZ_NAMES
-	#error Calloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
-	#endif
-
-	#ifdef ReAlloc
-	#undef PHALLOC_EZ_NAMES
-	#error ReAlloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
-	#endif
-
-	#ifdef Free
-	#undef PHALLOC_EZ_NAMES
-	#error Free macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
-	#endif
-
-	#ifdef PHALLOC_SPEED
-		#ifdef PHALLOC_DEBUG
-		#undef PHALLOC_DEBUG
-		#endif
-
-		#ifdef PHALLOC_WARN_DIRE
-		#undef PHALLOC_WARN_DIRE
-		#endif
-	#endif
-
 
 	#ifdef PHALLOC_WARN_DIRE
-		#ifndef PHALLOC_DEBUG
-		#define PHALLOC_DEBUG
-		#endif
+	#undef PHALLOC_WARN_DIRE
 	#endif
+#endif
+
+
+#ifdef PHALLOC_WARN_DIRE
+	#ifndef PHALLOC_DEBUG
+	#define PHALLOC_DEBUG
+	#endif
+#endif
 #pragma endregion
 
 #include "stdlib.h"
 
 #include <iostream>
+
 #ifdef PHALLOC_DEBUG 
 #include <map> 
 #endif
@@ -69,8 +70,8 @@ namespace pha
 {
 	constexpr size_t VERSION_MAJOR = 1;
 	constexpr size_t VERSION_MINOR = 0;
-	constexpr size_t VERSION_REVISION = 1;
-	constexpr const char* VERSION_CSTRING = "1.0.1";
+	constexpr size_t VERSION_REVISION = 2;
+	constexpr const char* VERSION_CSTRING = "1.0.2";
 
 	// Generates a version id based on input. Returns current version id by default.
 	static inline constexpr size_t VersionNumber(size_t major = VERSION_MAJOR, size_t minor = VERSION_MINOR, size_t revision = VERSION_REVISION) { return ((major << 16) | (minor << 8) | revision); }

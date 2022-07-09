@@ -20,49 +20,49 @@
 *//*--------------------------------------------------------------------------------*/
 
 #pragma region phalloc_internal_setting_macros
-	// Version defs, not necessary but probably good to have ffr.
-	#define PHALLOC_VERSION_MAJOR 1
-	#define PHALLOC_VERSION_MINOR 0
-	#define PHALLOC_VERSION_REVISION 1
-	#define PHALLOC_VERSION_STRING "1.0.1"
-	#define PHALLOC_VERSION_NUM(major, minor, revision) (((major) << 16) | ((minor) << 8) | (revision))
-	#define PHALLOC_VERSION PHALLOC_VERSION_NUM(PHALLOC_VERSION_MAJOR, PHALLOC_VERSION_MINOR, PHALLOC_VERSION_REVISION)
+// Version defs, not necessary but probably good to have ffr.
+#define PHALLOC_VERSION_MAJOR 1
+#define PHALLOC_VERSION_MINOR 0
+#define PHALLOC_VERSION_REVISION 2
+#define PHALLOC_VERSION_STRING "1.0.2"
+#define PHALLOC_VERSION_NUM(major, minor, revision) (((major) << 16) | ((minor) << 8) | (revision))
+#define PHALLOC_VERSION PHALLOC_VERSION_NUM(PHALLOC_VERSION_MAJOR, PHALLOC_VERSION_MINOR, PHALLOC_VERSION_REVISION)
 
-	#ifdef Malloc
-	#undef PHALLOC_EZ_NAMES
-	#error Malloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
-	#endif
+#ifdef Malloc
+#undef PHALLOC_EZ_NAMES
+#error Malloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+#endif
 
-	#ifdef Calloc
-	#undef PHALLOC_EZ_NAMES
-	#error Calloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
-	#endif
+#ifdef Calloc
+#undef PHALLOC_EZ_NAMES
+#error Calloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+#endif
 
-	#ifdef ReAlloc
-	#undef PHALLOC_EZ_NAMES
-	#error ReAlloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
-	#endif
+#ifdef ReAlloc
+#undef PHALLOC_EZ_NAMES
+#error ReAlloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+#endif
 
-	#ifdef Free
-	#undef PHALLOC_EZ_NAMES
-	#error Free macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
-	#endif
+#ifdef Free
+#undef PHALLOC_EZ_NAMES
+#error Free macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+#endif
 
-	#ifdef PHALLOC_SPEED
-		#ifdef PHALLOC_DEBUG
-		#undef PHALLOC_DEBUG
-		#endif
-
-		#ifdef PHALLOC_WARN_DIRE
-		#undef PHALLOC_WARN_DIRE
-		#endif
+#ifdef PHALLOC_SPEED
+	#ifdef PHALLOC_DEBUG
+	#undef PHALLOC_DEBUG
 	#endif
 
 	#ifdef PHALLOC_WARN_DIRE
-		#ifndef PHALLOC_DEBUG
-		#define PHALLOC_DEBUG
-		#endif
+	#undef PHALLOC_WARN_DIRE
 	#endif
+#endif
+
+#ifdef PHALLOC_WARN_DIRE
+	#ifndef PHALLOC_DEBUG
+	#define PHALLOC_DEBUG
+	#endif
+#endif
 #pragma endregion
 
 #ifdef __cplusplus
@@ -183,6 +183,15 @@ extern "C"
 	static inline void Pha_Init()
 	{
 		Pha_Internal_instanceVector = (voidptrmeminstancevector_t*)calloc(4, sizeof(voidptrmeminstancevector_t));
+		if (Pha_Internal_instanceVector == NULL)
+		{
+			#ifdef _CRT_INSECURE_DEPRECATE
+			fprintf_s(stderr, "PHALLOC ERROR: Pha_Init() failed to allocate vector\n");
+			#else
+			fprintf(stderr, "PHALLOC ERROR: Pha_Init() failed to allocate vector\n");
+			#endif
+			exit(EXIT_FAILURE);
+		}
 		Pha_Internal_instanceVectorLength = 4;
 		Pha_Internal_instanceVectorSize = 0;
 	}
@@ -193,8 +202,10 @@ extern "C"
 		free(Pha_Internal_instanceVector);
 	}
 	#else
+	// Initalizes library's internal list. Must be called before using any library functions
 	static inline void Pha_Init() {	}
 
+	// Frees the library's internal list.
 	static inline void Pha_Close() {	}
 	#endif
 
