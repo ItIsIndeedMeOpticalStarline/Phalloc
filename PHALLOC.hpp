@@ -1,6 +1,8 @@
 #ifndef _PHALLOC_HPP_
 #define _PHALLOC_HPP_
 
+//					 SEE BOTTOM OF FILE FOR LICENSE INFORMATION						//
+
 /*---------------------------CONFIGURABLE MACRO SETINGS---------------------------*//*
 |	#define PHALLOC_DEBUG		// Record debug information which can be output	with |
 |								Dump(outstream)										 |
@@ -17,53 +19,62 @@
 |	#define PHALLOC_WARN_DIRE	// Dump(ostream) only dumps not-freed memory		 |
 *//*--------------------------------------------------------------------------------*/
 
-#ifdef Malloc
-#undef PHALLOC_EZ_NAMES
-#error Malloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
-#endif
-
-#ifdef Calloc
-#undef PHALLOC_EZ_NAMES
-#error Calloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
-#endif
-
-#ifdef ReAlloc
-#undef PHALLOC_EZ_NAMES
-#error ReAlloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
-#endif
-
-#ifdef Free
-#undef PHALLOC_EZ_NAMES
-#error Free macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
-#endif
-
-#ifdef PHALLOC_SPEED
-	#ifdef PHALLOC_DEBUG
-	#undef PHALLOC_DEBUG
+#pragma region phalloc_internal_setting_macros
+	#ifdef Malloc
+	#undef PHALLOC_EZ_NAMES
+	#error Malloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
 	#endif
+
+	#ifdef Calloc
+	#undef PHALLOC_EZ_NAMES
+	#error Calloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+	#endif
+
+	#ifdef ReAlloc
+	#undef PHALLOC_EZ_NAMES
+	#error ReAlloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+	#endif
+
+	#ifdef Free
+	#undef PHALLOC_EZ_NAMES
+	#error Free macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+	#endif
+
+	#ifdef PHALLOC_SPEED
+		#ifdef PHALLOC_DEBUG
+		#undef PHALLOC_DEBUG
+		#endif
+
+		#ifdef PHALLOC_WARN_DIRE
+		#undef PHALLOC_WARN_DIRE
+		#endif
+	#endif
+
 
 	#ifdef PHALLOC_WARN_DIRE
-	#undef PHALLOC_WARN_DIRE
+		#ifndef PHALLOC_DEBUG
+		#define PHALLOC_DEBUG
+		#endif
 	#endif
-#endif
-
-
-#ifdef PHALLOC_WARN_DIRE
-	#ifndef PHALLOC_DEBUG
-	#define PHALLOC_DEBUG
-	#endif
-#endif
-
-#ifdef PHALLOC_DEBUG 
-#include <map> 
-#endif
+#pragma endregion
 
 #include "stdlib.h"
 
 #include <iostream>
+#ifdef PHALLOC_DEBUG 
+#include <map> 
+#endif
 
 namespace pha
 {
+	constexpr size_t VERSION_MAJOR = 1;
+	constexpr size_t VERSION_MINOR = 0;
+	constexpr size_t VERSION_REVISION = 1;
+	constexpr const char* VERSION_CSTRING = "1.0.1";
+
+	// Generates a version id based on input. Returns current version id by default.
+	static inline constexpr size_t VersionNumber(size_t major = VERSION_MAJOR, size_t minor = VERSION_MINOR, size_t revision = VERSION_REVISION) { return ((major << 16) | (minor << 8) | revision); }
+
 	#ifdef PHALLOC_DEBUG
 	struct mem_instance
 	{
@@ -78,10 +89,10 @@ namespace pha
 		#ifdef PHALLOC_DEBUG
 		// DO NOT USE instanceList
 		extern std::map<void*, mem_instance> instanceList;
-		#ifdef PHALLOC_IMPLEMENTATION
-		// DO NOT USE instanceList
-		std::map<void*, mem_instance> instanceList;
-		#endif
+			#ifdef PHALLOC_IMPLEMENTATION
+			// DO NOT USE instanceList
+			std::map<void*, mem_instance> instanceList;
+			#endif
 		#endif
 
 		// DO NOT CALL Malloc<typename>(size_t, const char*, size_t), USE PHA_MALLOC(typename, number) MACRO INSTEAD
@@ -272,3 +283,27 @@ namespace pha
 }
 
 #endif
+
+/*
+MIT License
+
+Copyright (c) 2022 ItIsIndeedMeOpticalStarline
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/

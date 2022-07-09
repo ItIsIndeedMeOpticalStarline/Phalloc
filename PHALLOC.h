@@ -1,6 +1,8 @@
 #ifndef _PHALLOC_H_
 #define _PHALLOC_H_
 
+//					 SEE BOTTOM OF FILE FOR LICENSE INFORMATION						//
+
 /*---------------------------CONFIGURABLE MACRO SETINGS---------------------------*//*
 |	#define PHALLOC_DEBUG		// Record debug information which can be output	with |
 |								Dump(outstream)										 |
@@ -17,52 +19,59 @@
 |	#define PHALLOC_WARN_DIRE	// Dump(ostream) only dumps not-freed memory		 |
 *//*--------------------------------------------------------------------------------*/
 
-#ifdef Malloc
-#undef PHALLOC_EZ_NAMES
-#error Malloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
-#endif
+#pragma region phalloc_internal_setting_macros
+	// Version defs, not necessary but probably good to have ffr.
+	#define PHALLOC_VERSION_MAJOR 1
+	#define PHALLOC_VERSION_MINOR 0
+	#define PHALLOC_VERSION_REVISION 1
+	#define PHALLOC_VERSION_STRING "1.0.1"
+	#define PHALLOC_VERSION_NUM(major, minor, revision) (((major) << 16) | ((minor) << 8) | (revision))
+	#define PHALLOC_VERSION PHALLOC_VERSION_NUM(PHALLOC_VERSION_MAJOR, PHALLOC_VERSION_MINOR, PHALLOC_VERSION_REVISION)
 
-#ifdef Calloc
-#undef PHALLOC_EZ_NAMES
-#error Calloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
-#endif
+	#ifdef Malloc
+	#undef PHALLOC_EZ_NAMES
+	#error Malloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+	#endif
 
-#ifdef ReAlloc
-#undef PHALLOC_EZ_NAMES
-#error ReAlloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
-#endif
+	#ifdef Calloc
+	#undef PHALLOC_EZ_NAMES
+	#error Calloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+	#endif
 
-#ifdef Free
-#undef PHALLOC_EZ_NAMES
-#error Free macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
-#endif
+	#ifdef ReAlloc
+	#undef PHALLOC_EZ_NAMES
+	#error ReAlloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+	#endif
 
-#ifdef PHALLOC_SPEED
-	#ifdef PHALLOC_DEBUG
-	#undef PHALLOC_DEBUG
+	#ifdef Free
+	#undef PHALLOC_EZ_NAMES
+	#error Free macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+	#endif
+
+	#ifdef PHALLOC_SPEED
+		#ifdef PHALLOC_DEBUG
+		#undef PHALLOC_DEBUG
+		#endif
+
+		#ifdef PHALLOC_WARN_DIRE
+		#undef PHALLOC_WARN_DIRE
+		#endif
 	#endif
 
 	#ifdef PHALLOC_WARN_DIRE
-	#undef PHALLOC_WARN_DIRE
+		#ifndef PHALLOC_DEBUG
+		#define PHALLOC_DEBUG
+		#endif
 	#endif
-#endif
-
-
-#ifdef PHALLOC_WARN_DIRE
-	#ifndef PHALLOC_DEBUG
-	#define PHALLOC_DEBUG
-	#endif
-#endif
-
-
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#pragma endregion
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+	#include "stdio.h"
+	#include "stdlib.h"
+	#include "string.h"
 
 	#define PHA_BOOL	char
 	#define PHA_FALSE	0
@@ -91,6 +100,7 @@ extern "C"
 	size_t Pha_Internal_instanceVectorSize;
 	#endif
 
+	// DO NOT CALL Pha_Internal_InstanceVector_Add(void*)
 	static inline void Pha_Internal_InstanceVector_Add(voidptrmeminstancevector_t obj)
 	{
 		if (Pha_Internal_instanceVector == NULL)
@@ -120,6 +130,7 @@ extern "C"
 		Pha_Internal_instanceVectorSize++;
 	}
 
+	// DO NOT CALL Pha_Internal_InstanceVector_Erase(void*)
 	static inline void Pha_Internal_InstanceVector_Erase(void* key)
 	{
 		if (Pha_Internal_instanceVector == NULL)
@@ -146,6 +157,7 @@ extern "C"
 		Pha_Internal_instanceVectorSize--;
 	}
 
+	// DO NOT CALL Pha_Internal_InstanceVector_Find(void*)
 	static inline meminstance_t* Pha_Internal_InstanceVector_Find(void* key)
 	{
 		if (Pha_Internal_instanceVector == NULL)
@@ -167,6 +179,7 @@ extern "C"
 		return NULL;
 	}
 
+	// Initalizes library's internal list. Must be called before using any library functions
 	static inline void Pha_Init()
 	{
 		Pha_Internal_instanceVector = (voidptrmeminstancevector_t*)calloc(4, sizeof(voidptrmeminstancevector_t));
@@ -174,6 +187,7 @@ extern "C"
 		Pha_Internal_instanceVectorSize = 0;
 	}
 
+	// Frees the library's internal list.
 	static inline void Pha_Close()
 	{
 		free(Pha_Internal_instanceVector);
@@ -298,6 +312,8 @@ extern "C"
 		memBlock = NULL;
 	}
 
+	// Dumps collected data into a given stream with the format:
+	// "(pointer): Allocated/Reallocated in (filepath) on line (line). Was/Was not freed."
 	static inline void Pha_Dump(FILE* stream)
 	{
 		PHA_BOOL doStderr = PHA_FALSE;
@@ -417,3 +433,27 @@ extern "C"
 #endif
 
 #endif
+
+/*
+MIT License
+
+Copyright (c) 2022 ItIsIndeedMeOpticalStarline
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
