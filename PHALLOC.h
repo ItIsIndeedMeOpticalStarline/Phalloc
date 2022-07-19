@@ -83,25 +83,25 @@ extern "C"
 		const char* file;
 		PHA_BOOL freed, reallocated;
 		size_t line;
-	} meminstance_t;
+	} mem_instance;
 
 	typedef struct
 	{
 		void* mem;
-		meminstance_t instance;
-	} voidptrmeminstancevector_t; // lol
+		mem_instance instance;
+	} void_ptr_mem_instance_vector; // lol
 
-	extern voidptrmeminstancevector_t* Pha_Internal_instanceVector;
+	extern void_ptr_mem_instance_vector* Pha_Internal_instanceVector;
 	extern size_t Pha_Internal_instanceVectorLength;
 	extern size_t Pha_Internal_instanceVectorSize;
 	#ifdef PHALLOC_IMPLEMENTATION
-	voidptrmeminstancevector_t* Pha_Internal_instanceVector;
+	void_ptr_mem_instance_vector* Pha_Internal_instanceVector;
 	size_t Pha_Internal_instanceVectorLength;
 	size_t Pha_Internal_instanceVectorSize;
 	#endif
 
 	// DO NOT CALL Pha_Internal_InstanceVector_Add(void*)
-	static inline void Pha_Internal_InstanceVector_Add(voidptrmeminstancevector_t obj)
+	static inline void Pha_Internal_InstanceVector_Add(void_ptr_mem_instance_vector obj)
 	{
 		if (Pha_Internal_instanceVector == NULL)
 		{
@@ -115,13 +115,13 @@ extern "C"
 
 		if (Pha_Internal_instanceVectorSize + 1 >= Pha_Internal_instanceVectorLength)
 		{
-			Pha_Internal_instanceVector = (voidptrmeminstancevector_t*)realloc((void*)Pha_Internal_instanceVector, (Pha_Internal_instanceVectorLength + (Pha_Internal_instanceVectorLength / 2)) * sizeof(voidptrmeminstancevector_t));
+			Pha_Internal_instanceVector = (void_ptr_mem_instance_vector*)realloc((void*)Pha_Internal_instanceVector, (Pha_Internal_instanceVectorLength + (Pha_Internal_instanceVectorLength / 2)) * sizeof(void_ptr_mem_instance_vector));
 			if (Pha_Internal_instanceVector == NULL)
 			{
 				#ifdef _CRT_INSECURE_DEPRECATE
-				fprintf_s(stderr, "PHALLOC ERROR: Pha_Internal_InstanceVector_Add(voidptrmeminstancevector_t) failed to reallocate vector\n");
+				fprintf_s(stderr, "PHALLOC ERROR: Pha_Internal_InstanceVector_Add(void_ptr_mem_instance_vector) failed to reallocate vector\n");
 				#else
-				fprintf(stderr, "PHALLOC ERROR: Pha_Internal_InstanceVector_Add(voidptrmeminstancevector_t) failed to reallocate vector\n");
+				fprintf(stderr, "PHALLOC ERROR: Pha_Internal_InstanceVector_Add(void_ptr_mem_instance_vector) failed to reallocate vector\n");
 				#endif
 				exit(EXIT_FAILURE);
 			}
@@ -158,7 +158,7 @@ extern "C"
 	}
 
 	// DO NOT CALL Pha_Internal_InstanceVector_Find(void*)
-	static inline meminstance_t* Pha_Internal_InstanceVector_Find(void* key)
+	static inline mem_instance* Pha_Internal_InstanceVector_Find(void* key)
 	{
 		if (Pha_Internal_instanceVector == NULL)
 		{
@@ -182,7 +182,7 @@ extern "C"
 	// Initalizes library's internal list. Must be called before using any library functions
 	static inline void Pha_Init()
 	{
-		Pha_Internal_instanceVector = (voidptrmeminstancevector_t*)calloc(4, sizeof(voidptrmeminstancevector_t));
+		Pha_Internal_instanceVector = (void_ptr_mem_instance_vector*)calloc(4, sizeof(void_ptr_mem_instance_vector));
 		if (Pha_Internal_instanceVector == NULL)
 		{
 			#ifdef _CRT_INSECURE_DEPRECATE
@@ -235,7 +235,7 @@ extern "C"
 		}
 
 		#ifdef PHALLOC_DEBUG
-		Pha_Internal_InstanceVector_Add((voidptrmeminstancevector_t){ mem, (meminstance_t){ file, PHA_FALSE, PHA_FALSE, line } });
+		Pha_Internal_InstanceVector_Add((void_ptr_mem_instance_vector){ mem, (mem_instance){ file, PHA_FALSE, PHA_FALSE, line } });
 		#endif
 
 		return mem;
@@ -260,7 +260,7 @@ extern "C"
 		}
 
 		#ifdef PHALLOC_DEBUG
-		Pha_Internal_InstanceVector_Add((voidptrmeminstancevector_t) { mem, (meminstance_t) { file, PHA_FALSE, PHA_FALSE, line } });
+		Pha_Internal_InstanceVector_Add((void_ptr_mem_instance_vector) { mem, (mem_instance) { file, PHA_FALSE, PHA_FALSE, line } });
 		#endif
 
 		return mem;
@@ -299,7 +299,7 @@ extern "C"
 		}
 
 		#ifdef PHALLOC_DEBUG
-		Pha_Internal_InstanceVector_Add((voidptrmeminstancevector_t) { reallocdMem, (meminstance_t) { file, PHA_FALSE, PHA_TRUE, line } });
+		Pha_Internal_InstanceVector_Add((void_ptr_mem_instance_vector) { reallocdMem, (mem_instance) { file, PHA_FALSE, PHA_TRUE, line } });
 		#endif
 
 		return reallocdMem;
