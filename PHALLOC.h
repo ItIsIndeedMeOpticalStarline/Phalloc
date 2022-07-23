@@ -323,6 +323,7 @@ extern "C"
 		memBlock = NULL;
 	}
 
+	#ifdef PHALLOC_DEBUG
 	// Dumps collected data into a given stream with the format:
 	// "(pointer): Allocated/Reallocated in (filepath) on line (line). Was/Was not freed."
 	static inline void Pha_Dump(FILE* stream)
@@ -380,6 +381,7 @@ extern "C"
 			}
 		}
 	}
+	#endif
 
 	#ifdef PHALLOC_EZ_NAMES
 	// Allocates a block of memory into code of a specific size and returns a typed pointer to the memory
