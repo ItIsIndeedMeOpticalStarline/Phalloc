@@ -71,7 +71,7 @@ namespace pha
 	constexpr size_t VERSION_MAJOR = 1;
 	constexpr size_t VERSION_MINOR = 0;
 	constexpr size_t VERSION_REVISION = 3;
-	constexpr const char* VERSION_CSTRING = "1.0.2";
+	constexpr const char* VERSION_CSTRING = "1.0.3";
 
 	// Generates a version id based on input. Returns current version id by default.
 	static inline constexpr size_t VersionNumber(size_t major = VERSION_MAJOR, size_t minor = VERSION_MINOR, size_t revision = VERSION_REVISION) { return ((major << 16) | (minor << 8) | revision); }
