@@ -20,24 +20,22 @@
 *//*--------------------------------------------------------------------------------*/
 
 #pragma region phalloc_internal_setting_macros
-#ifdef Malloc
-#undef PHALLOC_EZ_NAMES
-#error Malloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
-#endif
+#ifdef PHALLOC_EZ_NAMES
+	#ifdef Malloc
+	#error Malloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+	#endif
 
-#ifdef Calloc
-#undef PHALLOC_EZ_NAMES
-#error Calloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
-#endif
+	#ifdef Calloc
+	#error Calloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+	#endif
 
-#ifdef ReAlloc
-#undef PHALLOC_EZ_NAMES
-#error ReAlloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
-#endif
+	#ifdef ReAlloc
+	#error ReAlloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+	#endif
 
-#ifdef Free
-#undef PHALLOC_EZ_NAMES
-#error Free macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+	#ifdef Free
+	#error Free macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+	#endif
 #endif
 
 #ifdef PHALLOC_SPEED

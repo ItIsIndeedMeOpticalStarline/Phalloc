@@ -28,24 +28,22 @@
 #define PHALLOC_VERSION_NUM(major, minor, revision) (((major) << 16) | ((minor) << 8) | (revision))
 #define PHALLOC_VERSION PHALLOC_VERSION_NUM(PHALLOC_VERSION_MAJOR, PHALLOC_VERSION_MINOR, PHALLOC_VERSION_REVISION)
 
-#ifdef Malloc
-#undef PHALLOC_EZ_NAMES
-#error Malloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
-#endif
+#ifdef PHALLOC_EZ_NAMES
+	#ifdef Malloc
+	#error Malloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+	#endif
 
-#ifdef Calloc
-#undef PHALLOC_EZ_NAMES
-#error Calloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
-#endif
+	#ifdef Calloc
+	#error Calloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+	#endif
 
-#ifdef ReAlloc
-#undef PHALLOC_EZ_NAMES
-#error ReAlloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
-#endif
+	#ifdef ReAlloc
+	#error ReAlloc macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+	#endif
 
-#ifdef Free
-#undef PHALLOC_EZ_NAMES
-#error Free macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+	#ifdef Free
+	#error Free macro already defined. Please remove definition or undefine PHALLOC_EZ_NAMES
+	#endif
 #endif
 
 #ifdef PHALLOC_SPEED
