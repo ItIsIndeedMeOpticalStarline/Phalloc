@@ -69,9 +69,9 @@
 namespace pha
 {
 	constexpr size_t VERSION_MAJOR = 1;
-	constexpr size_t VERSION_MINOR = 0;
-	constexpr size_t VERSION_REVISION = 3;
-	constexpr const char* VERSION_CSTRING = "1.0.3";
+	constexpr size_t VERSION_MINOR = 1;
+	constexpr size_t VERSION_REVISION = 0;
+	constexpr const char* VERSION_CSTRING = "1.1.0";
 
 	// Generates a version id based on input. Returns current version id by default.
 	static inline constexpr size_t VersionNumber(size_t major = VERSION_MAJOR, size_t minor = VERSION_MINOR, size_t revision = VERSION_REVISION) { return ((major << 16) | (minor << 8) | revision); }
@@ -85,15 +85,32 @@ namespace pha
 			bool freed, reallocated;
 			size_t line;
 		};
+
+		extern std::map<void*, mem_instance> instanceList;
 		#endif
 
+		template<typename T>
+		static inline T* Malloc(size_t bytes, const char* file, size_t line);
+
+		template<typename T>
+		static inline T* Calloc(size_t numElements, const char* file, size_t line);
+
+		template<typename T>
+		static inline T* ReAlloc(T* memBlock, size_t bytes, const char* file, size_t line);
+
+		static inline void Free(void* memBlock);
+	}
+
+	#ifdef PHALLOC_DEBUG
+	static inline void Dump(std::ostream& stream = std::clog);
+	#endif
+
+	#ifdef PHALLOC_IMPLEMENTATION
+	namespace itl
+	{
 		#ifdef PHALLOC_DEBUG
 		// DO NOT USE instanceList
-		extern std::map<void*, mem_instance> instanceList;
-			#ifdef PHALLOC_IMPLEMENTATION
-			// DO NOT USE instanceList
-			std::map<void*, mem_instance> instanceList;
-			#endif
+		std::map<void*, mem_instance> instanceList;
 		#endif
 
 		// DO NOT CALL Malloc<typename>(size_t, const char*, size_t), USE PHA_MALLOC(typename, number) MACRO INSTEAD
@@ -157,7 +174,7 @@ namespace pha
 			#ifndef PHALLOC_SPEED
 			if (bytes % sizeof(T) != 0) // Would a cast work?
 			{
-				std::cerr << "PHALLOC ERROR: Truncated Memory Cast! Tried to PHA_REALLOC pointer at address " << memBlock << " to a new size of " << bytes << " bytes in " << file << " on line " << line << ", which could not be cast back to a(n)" << typeid(T).name() <<  "which has a size of " << sizeof(T) << std::endl;
+				std::cerr << "PHALLOC ERROR: Truncated Memory Cast! Tried to PHA_REALLOC pointer at address " << memBlock << " to a new size of " << bytes << " bytes in " << file << " on line " << line << ", which could not be cast back to a(n)" << typeid(T).name() << "which has a size of " << sizeof(T) << std::endl;
 				exit(EXIT_FAILURE);
 			}
 
@@ -194,37 +211,39 @@ namespace pha
 		}
 	}
 
-	#ifdef PHALLOC_DEBUG
-	// Dumps collected data into a given stream with the format:
-	// "(pointer): Allocated/Reallocated in (filepath) on line (line). Was/Was not freed."
-	static inline void Dump(std::ostream& stream = std::clog)
-	{
-		bool doClog = false;
-		if (!stream.good())
+		#ifdef PHALLOC_DEBUG
+		// Dumps collected data into a given stream with the format:
+		// "(pointer): Allocated/Reallocated in (filepath) on line (line). Was/Was not freed."
+		static inline void Dump(std::ostream& stream = std::clog)
 		{
-			std::cerr << "PHALLOC ERROR: Failed to dump to stream! Attempting to output to std::clog..." << std::endl;
-			doClog = true;
+			bool doClog = false;
+			if (!stream.good())
+			{
+				std::cerr << "PHALLOC ERROR: Failed to dump to stream! Attempting to output to std::clog..." << std::endl;
+				doClog = true;
+			}
+
+			for (const std::pair<void*, itl::mem_instance>& inst : itl::instanceList)
+			{
+				char allocOrRealloc[12] = "Allocated";
+				if (inst.second.reallocated)
+					strcpy_s(allocOrRealloc, sizeof(allocOrRealloc), "Reallocated");
+
+				char freedOrNot[8] = "Was not";
+				#ifndef PHALLOC_WARN_DIRE
+				if (inst.second.freed)
+					strcpy_s(freedOrNot, sizeof(freedOrNot), "Was");
+				#endif
+
+				if (doClog)
+					std::clog << inst.first << ": " << allocOrRealloc << " in " << inst.second.file << " on line " << inst.second.line << ". " << freedOrNot << " freed." << std::endl;
+				else
+					stream << inst.first << ": " << allocOrRealloc << " in " << inst.second.file << " on line " << inst.second.line << ". " << freedOrNot << " freed." << std::endl;
+			}
 		}
-
-		for (const std::pair<void*, itl::mem_instance>& inst : itl::instanceList)
-		{
-			char allocOrRealloc[12] = "Allocated";
-			if (inst.second.reallocated)
-				strcpy_s(allocOrRealloc, sizeof(allocOrRealloc), "Reallocated");
-
-			char freedOrNot[8] = "Was not";
-			#ifndef PHALLOC_WARN_DIRE
-			if (inst.second.freed)
-				strcpy_s(freedOrNot, sizeof(freedOrNot), "Was");
-			#endif
-
-			if (doClog)
-				std::clog << inst.first << ": " << allocOrRealloc << " in " << inst.second.file << " on line " << inst.second.line << ". " << freedOrNot << " freed." << std::endl;
-			else
-				stream << inst.first << ": " << allocOrRealloc << " in " << inst.second.file << " on line " << inst.second.line << ". " << freedOrNot << " freed." << std::endl;
-		}
-	}
+		#endif
 	#endif
+
 
 	#ifdef PHALLOC_EZ_NAMES
 	// Allocates a block of memory into code of a specific size and returns a typed pointer to the memory
