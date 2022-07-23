@@ -23,7 +23,7 @@
 // Version defs, not necessary but probably good to have ffr.
 #define PHALLOC_VERSION_MAJOR 1
 #define PHALLOC_VERSION_MINOR 0
-#define PHALLOC_VERSION_REVISION 2
+#define PHALLOC_VERSION_REVISION 3
 #define PHALLOC_VERSION_STRING "1.0.2"
 #define PHALLOC_VERSION_NUM(major, minor, revision) (((major) << 16) | ((minor) << 8) | (revision))
 #define PHALLOC_VERSION PHALLOC_VERSION_NUM(PHALLOC_VERSION_MAJOR, PHALLOC_VERSION_MINOR, PHALLOC_VERSION_REVISION)
