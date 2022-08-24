@@ -8,15 +8,14 @@ int main()
 {
 	Pha_Init();
 
-	printf_s("Hello, World!\n");
+	printf_s("Hello, World (C)\n");
 
 	size_t* arr1 = Malloc(size_t, sizeof(size_t) * 3);
 	size_t* arr2 = Calloc(size_t, 4);
 	arr1 = ReAlloc(size_t, arr1, sizeof(size_t) * 2);
 	Free(arr1);
-	Free(arr2);
 
-	Pha_Dump(stdout);
+	Pha_Dump(stdout); // This reports that arr2 was never freed!
 
 	Pha_Close();
 

@@ -68,8 +68,8 @@ namespace pha
 {
 	constexpr size_t VERSION_MAJOR = 1;
 	constexpr size_t VERSION_MINOR = 1;
-	constexpr size_t VERSION_REVISION = 0;
-	constexpr const char* VERSION_CSTRING = "1.1.0";
+	constexpr size_t VERSION_REVISION = 1;
+	constexpr const char* VERSION_CSTRING = "1.1.1";
 
 	// Generates a version id based on input. Returns current version id by default.
 	static inline constexpr size_t VersionNumber(size_t major = VERSION_MAJOR, size_t minor = VERSION_MINOR, size_t revision = VERSION_REVISION) { return ((major << 16) | (minor << 8) | revision); }
@@ -212,7 +212,7 @@ namespace pha
 		#ifdef PHALLOC_DEBUG
 		// Dumps collected data into a given stream with the format:
 		// "(pointer): Allocated/Reallocated in (filepath) on line (line). Was/Was not freed."
-		static inline void Dump(std::ostream& stream = std::clog)
+		static inline void Dump(std::ostream& stream)
 		{
 			bool doClog = false;
 			if (!stream.good())

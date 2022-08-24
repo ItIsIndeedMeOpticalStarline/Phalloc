@@ -14,7 +14,7 @@
 |			PHA_MALLOC(type, bytes)				-> Malloc(type, bytes)				 |
 |			PHA_CALLOC(type, numElements)		-> Calloc(type, numElements)		 |
 |			PHA_REALLOC(type, memBlock, bytes)  -> ReAlloc(type, memBlock, bytes)	 |
-|			PHA_FREE(type, memBlock)			-> Free(type memBlock)				 |
+|			PHA_FREE(memBlock)			-> Free(memBlock)							 |
 |																					 |
 |	#define PHALLOC_WARN_DIRE	// Dump(ostream) only dumps not-freed memory		 |
 *//*--------------------------------------------------------------------------------*/
@@ -23,8 +23,8 @@
 // Version defs, not necessary but probably good to have ffr.
 #define PHALLOC_VERSION_MAJOR 1
 #define PHALLOC_VERSION_MINOR 1
-#define PHALLOC_VERSION_REVISION 0
-#define PHALLOC_VERSION_STRING "1.1.0"
+#define PHALLOC_VERSION_REVISION 1
+#define PHALLOC_VERSION_STRING "1.1.1"
 #define PHALLOC_VERSION_NUM(major, minor, revision) (((major) << 16) | ((minor) << 8) | (revision))
 #define PHALLOC_VERSION PHALLOC_VERSION_NUM(PHALLOC_VERSION_MAJOR, PHALLOC_VERSION_MINOR, PHALLOC_VERSION_REVISION)
 
@@ -75,6 +75,20 @@ extern "C"
 	#define PHA_FALSE	0
 	#define PHA_TRUE	!PHA_FALSE
 
+	#define PHA_DEF static inline
+
+	#ifdef _CRT_INSECURE_DEPRECATE
+	#define PHA_FPRINTF(stream, string, ...) fprintf_s(stream, string, __VA_ARGS__)
+	#else
+	#define PHA_FPRINTF(stream, string, ...) fprintf(stream, string, __VA_ARGS__)
+	#endif
+
+	#ifdef _CRT_INSECURE_DEPRECATE
+	#define PHA_STRCPY(destination, source) strcpy_s(destination, sizeof(destination), source)
+	#else
+	#define PHA_STRCPY(destination, source) strcpy_s(destination, source)
+	#endif
+
 	#ifdef PHALLOC_DEBUG
 	typedef struct
 	{
@@ -93,26 +107,26 @@ extern "C"
 	extern size_t Pha_Internal_instanceVectorLength;
 	extern size_t Pha_Internal_instanceVectorSize;
 
-	static inline void Pha_Internal_InstanceVector_Add(void_ptr_mem_instance_vector obj);
+	PHA_DEF void Pha_Internal_InstanceVector_Add(void_ptr_mem_instance_vector obj);
 
-	static inline void Pha_Internal_InstanceVector_Erase(void* key);
+	PHA_DEF void Pha_Internal_InstanceVector_Erase(void* key);
 
-	static inline mem_instance* Pha_Internal_InstanceVector_Find(void* key);
+	PHA_DEF mem_instance* Pha_Internal_InstanceVector_Find(void* key);
 	#endif
 
-	static inline void Pha_Dump(FILE* stream);
+	PHA_DEF void Pha_Dump(FILE* stream);
 
-	static inline void Pha_Init();
+	PHA_DEF void Pha_Init();
 
-	static inline void Pha_Close();
+	PHA_DEF void Pha_Close();
 
-	static inline void* Pha_Internal_Malloc(size_t bytes, const char* file, size_t line, size_t sizeOfType);
+	PHA_DEF void* Pha_Internal_Malloc(size_t bytes, const char* file, size_t line, size_t sizeOfType);
 
-	static inline void* Pha_Internal_Calloc(size_t numElements, const char* file, size_t line, size_t sizeOfType);
+	PHA_DEF void* Pha_Internal_Calloc(size_t numElements, const char* file, size_t line, size_t sizeOfType);
 
-	static inline void* Pha_Internal_ReAlloc(void* memBlock, size_t bytes, const char* file, size_t line, size_t sizeOfType);
+	PHA_DEF void* Pha_Internal_ReAlloc(void* memBlock, size_t bytes, const char* file, size_t line, size_t sizeOfType);
 
-	static inline void Pha_Internal_Free(void* memBlock);
+	PHA_DEF void Pha_Internal_Free(void* memBlock);
 
 	#ifdef PHALLOC_IMPLEMENTATION
 		#ifdef PHALLOC_DEBUG
@@ -121,15 +135,11 @@ extern "C"
 		size_t Pha_Internal_instanceVectorSize;
 
 		// DO NOT CALL Pha_Internal_InstanceVector_Add(void*)
-		static inline void Pha_Internal_InstanceVector_Add(void_ptr_mem_instance_vector obj)
+		PHA_DEF void Pha_Internal_InstanceVector_Add(void_ptr_mem_instance_vector obj)
 		{
 			if (Pha_Internal_instanceVector == NULL)
 			{
-				#ifdef _CRT_INSECURE_DEPRECATE
-				fprintf_s(stderr, "PHALLOC ERROR: A PHALLOC library function was called before Pha_Init()\n");
-				#else
-				fprintf(stderr, "PHALLOC ERROR: A PHALLOC library function was called before Pha_Init()\n");
-				#endif
+				PHA_FPRINTF(stderr, "PHALLOC ERROR: A PHALLOC library function was called before Pha_Init()\n");
 				exit(EXIT_FAILURE);
 			}
 
@@ -138,11 +148,7 @@ extern "C"
 				Pha_Internal_instanceVector = (void_ptr_mem_instance_vector*)realloc((void*)Pha_Internal_instanceVector, (Pha_Internal_instanceVectorLength + (Pha_Internal_instanceVectorLength / 2)) * sizeof(void_ptr_mem_instance_vector));
 				if (Pha_Internal_instanceVector == NULL)
 				{
-					#ifdef _CRT_INSECURE_DEPRECATE
-					fprintf_s(stderr, "PHALLOC ERROR: Pha_Internal_InstanceVector_Add(void_ptr_mem_instance_vector) failed to reallocate vector\n");
-					#else
-					fprintf(stderr, "PHALLOC ERROR: Pha_Internal_InstanceVector_Add(void_ptr_mem_instance_vector) failed to reallocate vector\n");
-					#endif
+					PHA_FPRINTF(stderr, "PHALLOC ERROR: Pha_Internal_InstanceVector_Add(void_ptr_mem_instance_vector) failed to reallocate vector\n");
 					exit(EXIT_FAILURE);
 				}
 			}
@@ -151,15 +157,11 @@ extern "C"
 		}
 
 		// DO NOT CALL Pha_Internal_InstanceVector_Erase(void*)
-		static inline void Pha_Internal_InstanceVector_Erase(void* key)
+		PHA_DEF void Pha_Internal_InstanceVector_Erase(void* key)
 		{
 			if (Pha_Internal_instanceVector == NULL)
 			{
-				#ifdef _CRT_INSECURE_DEPRECATE
-				fprintf_s(stderr, "PHALLOC ERROR: A PHALLOC library function was called before Pha_Init()\n");
-				#else
-				fprintf(stderr, "PHALLOC ERROR: A PHALLOC library function was called before Pha_Init()\n");
-				#endif
+				PHA_FPRINTF(stderr, "PHALLOC ERROR: A PHALLOC library function was called before Pha_Init()\n");
 				exit(EXIT_FAILURE);
 			}
 
@@ -178,15 +180,11 @@ extern "C"
 		}
 
 		// DO NOT CALL Pha_Internal_InstanceVector_Find(void*)
-		static inline mem_instance* Pha_Internal_InstanceVector_Find(void* key)
+		PHA_DEF mem_instance* Pha_Internal_InstanceVector_Find(void* key)
 		{
 			if (Pha_Internal_instanceVector == NULL)
 			{
-				#ifdef _CRT_INSECURE_DEPRECATE
-				fprintf_s(stderr, "PHALLOC ERROR: A PHALLOC library function was called before Pha_Init()\n");
-				#else
-				fprintf(stderr, "PHALLOC ERROR: A PHALLOC library function was called before Pha_Init()\n");
-				#endif
+				PHA_FPRINTF(stderr, "PHALLOC ERROR: A PHALLOC library function was called before Pha_Init()\n");
 				exit(EXIT_FAILURE);
 			}
 
@@ -201,73 +199,38 @@ extern "C"
 
 		// Dumps collected data into a given stream with the format:
 		// "(pointer): Allocated/Reallocated in (filepath) on line (line). Was/Was not freed."
-		static inline void Pha_Dump(FILE* stream)
+		PHA_DEF void Pha_Dump(FILE* stream)
 		{
-			PHA_BOOL doStderr = PHA_FALSE;
 			if (stream == NULL)
 			{
-				#ifdef _CRT_INSECURE_DEPRECATE
-				fprintf_s(stderr, "PHALLOC ERROR: Failed to dump to stream! Attempting to output to stderr...\n");
-				#else
-				fprintf(stderr, "PHALLOC ERROR: Failed to dump to stream! Attempting to output to stderr...\n");
-				#endif
-				doStderr = PHA_TRUE;
+				PHA_FPRINTF(stderr, "PHALLOC ERROR: Failed to dump to stream! Attempting to output to stderr...\n");
+				stream = stderr;
 			}
 
 			for (size_t i = 0; i < Pha_Internal_instanceVectorSize; i++)
 			{
 				char allocOrRealloc[12] = "Allocated";
+
 				if (Pha_Internal_instanceVector[i].instance.reallocated)
-				{
-					#ifdef _CRT_INSECURE_DEPRECATE
-					strcpy_s(allocOrRealloc, sizeof(allocOrRealloc), "Reallocated");
-					#else
-					strcpy(allocOrRealloc, "Reallocated");
-					#endif
-				}
+					PHA_STRCPY(allocOrRealloc, "Reallocated");
 
 				char freedOrNot[8] = "Was not";
 				#ifndef PHALLOC_WARN_DIRE
 				if (Pha_Internal_instanceVector[i].instance.freed)
-				{
-					#ifdef _CRT_INSECURE_DEPRECATE
-					strcpy_s(freedOrNot, sizeof(freedOrNot), "Was");
-					#else
-					strcpy(freedOrNot, "Was");
-					#endif
-				}
+					PHA_STRCPY(freedOrNot, "Was");
 				#endif
 
-				if (doStderr)
-				{
-					#ifdef _CRT_INSECURE_DEPRECATE
-					fprintf_s(stderr, "%p: %s in %s on line %llu. %s freed.\n", Pha_Internal_instanceVector[i].mem, allocOrRealloc, Pha_Internal_instanceVector[i].instance.file, Pha_Internal_instanceVector[i].instance.line, freedOrNot);
-					#else
-					fprintf(stderr, "%p: %s in %s on line %llu. %s freed.\n", Pha_Internal_instanceVector[i].mem, allocOrRealloc, Pha_Internal_instanceVector[i].instance.file, Pha_Internal_instanceVector[i].instance.line, freedOrNot);
-					#endif
-				}
-				else
-				{
-					#ifdef _CRT_INSECURE_DEPRECATE
-					fprintf_s(stream, "%p: %s in %s on line %llu. %s freed.\n", Pha_Internal_instanceVector[i].mem, allocOrRealloc, Pha_Internal_instanceVector[i].instance.file, Pha_Internal_instanceVector[i].instance.line, freedOrNot);
-					#else
-					fprintf(stream, "%p: %s in %s on line %llu. %s freed.\n", Pha_Internal_instanceVector[i].mem, allocOrRealloc, Pha_Internal_instanceVector[i].instance.file, Pha_Internal_instanceVector[i].instance.line, freedOrNot);
-					#endif
-				}
+				PHA_FPRINTF(stream, "%p: %s in %s on line %llu. %s freed.\n", Pha_Internal_instanceVector[i].mem, allocOrRealloc, Pha_Internal_instanceVector[i].instance.file, Pha_Internal_instanceVector[i].instance.line, freedOrNot);
 			}
 		}
 
 		// Initalizes library's internal list. Must be called before using any library functions
-		static inline void Pha_Init()
+		PHA_DEF void Pha_Init()
 		{
 			Pha_Internal_instanceVector = (void_ptr_mem_instance_vector*)calloc(4, sizeof(void_ptr_mem_instance_vector));
 			if (Pha_Internal_instanceVector == NULL)
 			{
-				#ifdef _CRT_INSECURE_DEPRECATE
-				fprintf_s(stderr, "PHALLOC ERROR: Pha_Init() failed to allocate vector\n");
-				#else
-				fprintf(stderr, "PHALLOC ERROR: Pha_Init() failed to allocate vector\n");
-				#endif
+				PHA_FPRINTF(stderr, "PHALLOC ERROR: Pha_Init() failed to allocate vector\n");
 				exit(EXIT_FAILURE);
 			}
 			Pha_Internal_instanceVectorLength = 4;
@@ -275,44 +238,36 @@ extern "C"
 		}
 
 		// Frees the library's internal list.
-		static inline void Pha_Close()
+		PHA_DEF void Pha_Close()
 		{
 			free(Pha_Internal_instanceVector);
 		}
 		#else
 		// Dumps collected data into a given stream with the format:
 		// "(pointer): Allocated/Reallocated in (filepath) on line (line). Was/Was not freed."
-		static inline void Pha_Dump(FILE* stream) {	}
+		PHA_DEF void Pha_Dump(FILE* stream) {	}
 
 		// Initalizes library's internal list. Must be called before using any library functions if PHALLOC_DEBUG is defined
-		static inline void Pha_Init() {	}
+		PHA_DEF void Pha_Init() {	}
 
 		// Frees the library's internal list.
-		static inline void Pha_Close() {	}
+		PHA_DEF void Pha_Close() {	}
 		#endif
 
 	// DO NOT CALL Pha_Internal_Malloc(size_t, const char*, size_t, size_t), USE PHA_MALLOC(typename, number) MACRO INSTEAD
-	static inline void* Pha_Internal_Malloc(size_t bytes, const char* file, size_t line, size_t sizeOfType)
+	PHA_DEF void* Pha_Internal_Malloc(size_t bytes, const char* file, size_t line, size_t sizeOfType)
 	{
 		#ifndef PHALLOC_SPEED
 		if (bytes % sizeOfType != 0) // Would a cast work?
 		{
-			#ifdef _CRT_INSECURE_DEPRECATE
-			fprintf_s(stderr, "PHALLOC ERROR: Truncated Memory Cast! Tried to PHA_MALLOC %llu bytes in %s on line %llu, which could not be cast to a type of size %llu\n", bytes, file, line, sizeOfType);
-			#else
-			fprintf(stderr, "PHALLOC ERROR: Truncated Memory Cast! Tried to PHA_MALLOC %llu bytes in %s on line %llu, which could not be cast to a type of size %llu\n", bytes, file, line, sizeOfType);
-			#endif
+			PHA_FPRINTF(stderr, "PHALLOC ERROR: Truncated Memory Cast! Tried to PHA_MALLOC %llu bytes in %s on line %llu, which could not be cast to a type of size %llu\n", bytes, file, line, sizeOfType);
 			exit(EXIT_FAILURE);
 		}
 
 		void* mem = malloc(bytes);
 		if (!mem)
 		{
-			#ifdef _CRT_INSECURE_DEPRECATE
-			fprintf_s(stderr, "PHALLOC ERROR: Out of Memory! Tried to PHA_MALLOC %llu bytes in %s on line %llu\n", bytes, file, line);
-			#else
-			fprintf(stderr, "PHALLOC ERROR: Out of Memory! Tried to PHA_MALLOC %llu bytes in %s on line %llu\n", bytes, file, line);
-			#endif
+			PHA_FPRINTF(stderr, "PHALLOC ERROR: Out of Memory! Tried to PHA_MALLOC %llu bytes in %s on line %llu\n", bytes, file, line);
 			exit(EXIT_FAILURE);
 		}
 
@@ -327,17 +282,13 @@ extern "C"
 	}
 
 	// DO NOT CALL Pha_Internal_Calloc(size_t, const char*, size_t, size_t), USE PHA_CALLOC(typename, number) MACRO INSTEAD
-	static inline void* Pha_Internal_Calloc(size_t numElements, const char* file, size_t line, size_t sizeOfType)
+	PHA_DEF void* Pha_Internal_Calloc(size_t numElements, const char* file, size_t line, size_t sizeOfType)
 	{
 		#ifndef PHALLOC_SPEED
 		void* mem = calloc(numElements, sizeOfType);
 		if (!mem)
 		{
-			#ifdef _CRT_INSECURE_DEPRECATE
-			fprintf_s(stderr, "PHALLOC ERROR: Out of Memory! Tried to PHA_CALLOC %llu bytes in %s on line %llu\n", numElements, file, line);
-			#else
-			fprintf(stderr, "PHALLOC ERROR: Out of Memory! Tried to PHA_CALLOC %llu bytes in %s on line %llu\n", numElements, file, line);
-			#endif
+			PHA_FPRINTF(stderr, "PHALLOC ERROR: Out of Memory! Tried to PHA_CALLOC %llu bytes in %s on line %llu\n", numElements, file, line);
 			exit(EXIT_FAILURE);
 		}
 
@@ -352,7 +303,7 @@ extern "C"
 	}
 
 	// DO NOT CALL Pha_Internal_ReAlloc(void*, size_t, const char*, size_t, size_t), USE PHA_REALLOC(typename, type*, number) MACRO INSTEAD
-	static inline void* Pha_Internal_ReAlloc(void* memBlock, size_t bytes, const char* file, size_t line, size_t sizeOfType)
+	PHA_DEF void* Pha_Internal_ReAlloc(void* memBlock, size_t bytes, const char* file, size_t line, size_t sizeOfType)
 	{
 		#ifdef PHALLOC_DEBUG
 		Pha_Internal_InstanceVector_Erase(memBlock);
@@ -361,22 +312,14 @@ extern "C"
 		#ifndef PHALLOC_SPEED
 		if (bytes % sizeOfType != 0) // Would a cast work?
 		{
-			#ifdef _CRT_INSECURE_DEPRECATE
-			fprintf_s(stderr, "PHALLOC ERROR: Truncated Memory Cast! Tried to PHA_REALLOC pointer at address %p to a new size of %llu bytes in %s on line %llu, which could not be cast to a type of size %llu\n", memBlock, bytes, file, line, sizeOfType);
-			#else
-			fprintf(stderr, "PHALLOC ERROR: Truncated Memory Cast! Tried to PHA_REALLOC pointer at address %p to a new size of %llu bytes in %s on line %llu, which could not be cast to a type of size %llu\n", memBlock, bytes, file, line, sizeOfType);
-			#endif
+			PHA_FPRINTF(stderr, "PHALLOC ERROR: Truncated Memory Cast! Tried to PHA_REALLOC pointer at address %p to a new size of %llu bytes in %s on line %llu, which could not be cast to a type of size %llu\n", memBlock, bytes, file, line, sizeOfType);
 			exit(EXIT_FAILURE);
 		}
 
 		void* reallocdMem = realloc(memBlock, bytes);
 		if (!reallocdMem)
 		{
-			#ifdef _CRT_INSECURE_DEPRECATE
-			fprintf_s(stderr, "PHALLOC ERROR: Failed Reallocation! Tried to PHA_REALLOC pointer at address %p to a new size of %llu bytes in %s on line %llu\n", memBlock, bytes, file, line);
-			#else
-			fprintf(stderr, "PHALLOC ERROR: Failed Reallocation! Tried to PHA_REALLOC pointer at address %p to a new size of %llu bytes in %s on line %llu\n", memBlock, bytes, file, line);
-			#endif
+			PHA_FPRINTF(stderr, "PHALLOC ERROR: Failed Reallocation! Tried to PHA_REALLOC pointer at address %p to a new size of %llu bytes in %s on line %llu\n", memBlock, bytes, file, line);
 			exit(EXIT_FAILURE);
 		}
 
@@ -391,7 +334,7 @@ extern "C"
 	}
 
 	// DO NOT CALL Pha_Internal_Free(void*), USE PHA_FREE(typename, type*) MACRO INSTEAD
-	static inline void Pha_Internal_Free(void* memBlock)
+	PHA_DEF void Pha_Internal_Free(void* memBlock)
 	{
 		#ifdef PHALLOC_DEBUG
 			#ifdef PHALLOC_WARN_DIRE
@@ -459,6 +402,10 @@ extern "C"
 	// type* memBlock:		pointer to the allocated memory
 	#define PHA_FREE(memBlock) Pha_Internal_Free((void*)memBlock)
 	#endif
+
+	#undef PHA_FPRINTF
+
+	#undef PHA_DEF
 
 	#undef PHA_BOOL
 	#undef PHA_FALSE
