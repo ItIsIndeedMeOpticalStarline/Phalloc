@@ -68,8 +68,8 @@ namespace pha
 {
 	constexpr size_t VERSION_MAJOR = 1;
 	constexpr size_t VERSION_MINOR = 1;
-	constexpr size_t VERSION_REVISION = 1;
-	constexpr const char* VERSION_CSTRING = "1.1.1";
+	constexpr size_t VERSION_REVISION = 2;
+	constexpr const char* VERSION_CSTRING = "1.1.2";
 
 	// Generates a version id based on input. Returns current version id by default.
 	static inline constexpr size_t VersionNumber(size_t major = VERSION_MAJOR, size_t minor = VERSION_MINOR, size_t revision = VERSION_REVISION) { return ((major << 16) | (minor << 8) | revision); }
@@ -81,20 +81,20 @@ namespace pha
 		{
 			const char* file;
 			bool freed, reallocated;
-			size_t line;
+			int line;
 		};
 
 		extern std::map<void*, mem_instance> instanceList;
 		#endif
 
 		template<typename T>
-		static inline T* Malloc(size_t bytes, const char* file, size_t line);
+		static inline T* Malloc(size_t bytes, const char* file, int line);
 
 		template<typename T>
-		static inline T* Calloc(size_t numElements, const char* file, size_t line);
+		static inline T* Calloc(size_t numElements, const char* file, int line);
 
 		template<typename T>
-		static inline T* ReAlloc(T* memBlock, size_t bytes, const char* file, size_t line);
+		static inline T* ReAlloc(T* memBlock, size_t bytes, const char* file, int line);
 
 		static inline void Free(void* memBlock);
 	}

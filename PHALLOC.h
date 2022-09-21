@@ -23,8 +23,8 @@
 // Version defs, not necessary but probably good to have ffr.
 #define PHALLOC_VERSION_MAJOR 1
 #define PHALLOC_VERSION_MINOR 1
-#define PHALLOC_VERSION_REVISION 1
-#define PHALLOC_VERSION_STRING "1.1.1"
+#define PHALLOC_VERSION_REVISION 2
+#define PHALLOC_VERSION_STRING "1.1.2"
 #define PHALLOC_VERSION_NUM(major, minor, revision) (((major) << 16) | ((minor) << 8) | (revision))
 #define PHALLOC_VERSION PHALLOC_VERSION_NUM(PHALLOC_VERSION_MAJOR, PHALLOC_VERSION_MINOR, PHALLOC_VERSION_REVISION)
 
@@ -86,7 +86,7 @@ extern "C"
 	#ifdef _CRT_INSECURE_DEPRECATE
 	#define PHA_STRCPY(destination, source) strcpy_s(destination, sizeof(destination), source)
 	#else
-	#define PHA_STRCPY(destination, source) strcpy_s(destination, source)
+	#define PHA_STRCPY(destination, source) strcpy(destination, source)
 	#endif
 
 	#ifdef PHALLOC_DEBUG
@@ -94,7 +94,7 @@ extern "C"
 	{
 		const char* file;
 		PHA_BOOL freed, reallocated;
-		size_t line;
+		int line;
 	} mem_instance;
 
 	typedef struct
@@ -120,11 +120,11 @@ extern "C"
 
 	PHA_DEF void Pha_Close();
 
-	PHA_DEF void* Pha_Internal_Malloc(size_t bytes, const char* file, size_t line, size_t sizeOfType);
+	PHA_DEF void* Pha_Internal_Malloc(size_t bytes, const char* file, int line, size_t sizeOfType);
 
-	PHA_DEF void* Pha_Internal_Calloc(size_t numElements, const char* file, size_t line, size_t sizeOfType);
+	PHA_DEF void* Pha_Internal_Calloc(size_t numElements, const char* file, int  line, size_t sizeOfType);
 
-	PHA_DEF void* Pha_Internal_ReAlloc(void* memBlock, size_t bytes, const char* file, size_t line, size_t sizeOfType);
+	PHA_DEF void* Pha_Internal_ReAlloc(void* memBlock, size_t bytes, const char* file, int line, size_t sizeOfType);
 
 	PHA_DEF void Pha_Internal_Free(void* memBlock);
 
@@ -145,8 +145,13 @@ extern "C"
 
 			if (Pha_Internal_instanceVectorSize + 1 >= Pha_Internal_instanceVectorLength)
 			{
-				Pha_Internal_instanceVector = (void_ptr_mem_instance_vector*)realloc((void*)Pha_Internal_instanceVector, (Pha_Internal_instanceVectorLength + (Pha_Internal_instanceVectorLength / 2)) * sizeof(void_ptr_mem_instance_vector));
-				if (Pha_Internal_instanceVector == NULL)
+				// Must be done this way in order to prevent a warning. The warning wouldn't have mattered as the program is to crash if realloc(void*, size_t) returned NULL, which would have free'd the whole heap
+				void* temp = realloc((void*)Pha_Internal_instanceVector, (Pha_Internal_instanceVectorLength + (Pha_Internal_instanceVectorLength / 2)) * sizeof(void_ptr_mem_instance_vector));
+				if (temp != NULL)
+				{
+					Pha_Internal_instanceVector = (void_ptr_mem_instance_vector*)temp;
+				}
+				else
 				{
 					PHA_FPRINTF(stderr, "PHALLOC ERROR: Pha_Internal_InstanceVector_Add(void_ptr_mem_instance_vector) failed to reallocate vector\n");
 					exit(EXIT_FAILURE);
@@ -220,7 +225,7 @@ extern "C"
 					PHA_STRCPY(freedOrNot, "Was");
 				#endif
 
-				PHA_FPRINTF(stream, "%p: %s in %s on line %llu. %s freed.\n", Pha_Internal_instanceVector[i].mem, allocOrRealloc, Pha_Internal_instanceVector[i].instance.file, Pha_Internal_instanceVector[i].instance.line, freedOrNot);
+				PHA_FPRINTF(stream, "%p: %s in %s on line %i. %s freed.\n", Pha_Internal_instanceVector[i].mem, allocOrRealloc, Pha_Internal_instanceVector[i].instance.file, Pha_Internal_instanceVector[i].instance.line, freedOrNot);
 			}
 		}
 
@@ -255,19 +260,19 @@ extern "C"
 		#endif
 
 	// DO NOT CALL Pha_Internal_Malloc(size_t, const char*, size_t, size_t), USE PHA_MALLOC(typename, number) MACRO INSTEAD
-	PHA_DEF void* Pha_Internal_Malloc(size_t bytes, const char* file, size_t line, size_t sizeOfType)
+	PHA_DEF void* Pha_Internal_Malloc(size_t bytes, const char* file, int line, size_t sizeOfType)
 	{
 		#ifndef PHALLOC_SPEED
 		if (bytes % sizeOfType != 0) // Would a cast work?
 		{
-			PHA_FPRINTF(stderr, "PHALLOC ERROR: Truncated Memory Cast! Tried to PHA_MALLOC %llu bytes in %s on line %llu, which could not be cast to a type of size %llu\n", bytes, file, line, sizeOfType);
+			PHA_FPRINTF(stderr, "PHALLOC ERROR: Truncated Memory Cast! Tried to PHA_MALLOC %llu bytes in %s on line %i, which could not be cast to a type of size %llu\n", bytes, file, line, sizeOfType);
 			exit(EXIT_FAILURE);
 		}
 
 		void* mem = malloc(bytes);
 		if (!mem)
 		{
-			PHA_FPRINTF(stderr, "PHALLOC ERROR: Out of Memory! Tried to PHA_MALLOC %llu bytes in %s on line %llu\n", bytes, file, line);
+			PHA_FPRINTF(stderr, "PHALLOC ERROR: Out of Memory! Tried to PHA_MALLOC %llu bytes in %s on line %i\n", bytes, file, line);
 			exit(EXIT_FAILURE);
 		}
 
@@ -282,13 +287,13 @@ extern "C"
 	}
 
 	// DO NOT CALL Pha_Internal_Calloc(size_t, const char*, size_t, size_t), USE PHA_CALLOC(typename, number) MACRO INSTEAD
-	PHA_DEF void* Pha_Internal_Calloc(size_t numElements, const char* file, size_t line, size_t sizeOfType)
+	PHA_DEF void* Pha_Internal_Calloc(size_t numElements, const char* file, int line, size_t sizeOfType)
 	{
 		#ifndef PHALLOC_SPEED
 		void* mem = calloc(numElements, sizeOfType);
 		if (!mem)
 		{
-			PHA_FPRINTF(stderr, "PHALLOC ERROR: Out of Memory! Tried to PHA_CALLOC %llu bytes in %s on line %llu\n", numElements, file, line);
+			PHA_FPRINTF(stderr, "PHALLOC ERROR: Out of Memory! Tried to PHA_CALLOC %llu bytes in %s on line %i\n", numElements, file, line);
 			exit(EXIT_FAILURE);
 		}
 
@@ -303,23 +308,23 @@ extern "C"
 	}
 
 	// DO NOT CALL Pha_Internal_ReAlloc(void*, size_t, const char*, size_t, size_t), USE PHA_REALLOC(typename, type*, number) MACRO INSTEAD
-	PHA_DEF void* Pha_Internal_ReAlloc(void* memBlock, size_t bytes, const char* file, size_t line, size_t sizeOfType)
+	PHA_DEF void* Pha_Internal_ReAlloc(void* memBlock, size_t bytes, const char* file, int line, size_t sizeOfType)
 	{
+		#ifndef PHALLOC_SPEED
 		#ifdef PHALLOC_DEBUG
 		Pha_Internal_InstanceVector_Erase(memBlock);
 		#endif
 
-		#ifndef PHALLOC_SPEED
 		if (bytes % sizeOfType != 0) // Would a cast work?
 		{
-			PHA_FPRINTF(stderr, "PHALLOC ERROR: Truncated Memory Cast! Tried to PHA_REALLOC pointer at address %p to a new size of %llu bytes in %s on line %llu, which could not be cast to a type of size %llu\n", memBlock, bytes, file, line, sizeOfType);
+			PHA_FPRINTF(stderr, "PHALLOC ERROR: Truncated Memory Cast! Tried to PHA_REALLOC pointer at address %p to a new size of %llu bytes in %s on line %i, which could not be cast to a type of size %llu\n", memBlock, bytes, file, line, sizeOfType);
 			exit(EXIT_FAILURE);
 		}
 
 		void* reallocdMem = realloc(memBlock, bytes);
 		if (!reallocdMem)
 		{
-			PHA_FPRINTF(stderr, "PHALLOC ERROR: Failed Reallocation! Tried to PHA_REALLOC pointer at address %p to a new size of %llu bytes in %s on line %llu\n", memBlock, bytes, file, line);
+			PHA_FPRINTF(stderr, "PHALLOC ERROR: Failed Reallocation! Tried to PHA_REALLOC pointer at address %p to a new size of %llu bytes in %s on line %i\n", memBlock, bytes, file, line);
 			exit(EXIT_FAILURE);
 		}
 
@@ -402,6 +407,8 @@ extern "C"
 	// type* memBlock:		pointer to the allocated memory
 	#define PHA_FREE(memBlock) Pha_Internal_Free((void*)memBlock)
 	#endif
+
+	#undef PHA_STRCPY
 
 	#undef PHA_FPRINTF
 
